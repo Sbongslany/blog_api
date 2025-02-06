@@ -1,72 +1,18 @@
  const express = require('express');
+const { userRegisterCtrl, userLoginCtrl, getUsersCtrl, userProfileCtrl, userDeleteCtrl } = require('../../controllers/users/userController');
 
  const userRouter = express.Router();
 
- userRouter.post('/register', async(req, res) => {
-    try {
-       res.json({
-           status: "success",
-           data: "user registered"
-       })
-    } catch (error) {
-       res.json(error.message)
-    }
-})
+userRouter.post('/register', userRegisterCtrl)
 
-userRouter.post('/login', async(req, res) => {
-    try {
-       res.json({
-           status: "success",
-           data: "Login"
-       })
-    } catch (error) {
-       res.json(error.message)
-    }
-})
+userRouter.post('/login', userLoginCtrl)
 
-//Profile
-userRouter.get('/profile/:id', async(req, res) => {
-    try {
-       res.json({
-           status: "success",
-           data: "Profile Route"
-       })
-    } catch (error) {
-       res.json(error.message)
-    }
-})
-//users
-userRouter.get('/', async(req, res) => {
-    try {
-       res.json({
-           status: "success",
-           data: "Get all Users Route"
-       })
-    } catch (error) {
-       res.json(error.message)
-    }
-})
-//Delete
-userRouter.delete('/:id', async(req, res) => {
-    try {
-       res.json({
-           status: "success",
-           data: "Delete Route"
-       })
-    } catch (error) {
-       res.json(error.message)
-    }
-})
-//Edit
-userRouter.put('/:id', async(req, res) => {
-    try {
-       res.json({
-           status: "success",
-           data: "Edit Route"
-       })
-    } catch (error) {
-       res.json(error.message)
-    }
-})
+userRouter.get('/profile/:id', userProfileCtrl )
+
+userRouter.get('/', getUsersCtrl)
+
+userRouter.delete('/:id', userDeleteCtrl)
+
+userRouter.put('/:id', )
 
 module.exports = userRouter;
