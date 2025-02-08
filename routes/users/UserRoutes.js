@@ -1,13 +1,14 @@
  const express = require('express');
-const { userRegisterCtrl, userLoginCtrl, getUsersCtrl, userProfileCtrl, userDeleteCtrl } = require('../../controllers/users/userController');
-
  const userRouter = express.Router();
+const { userRegisterCtrl, userLoginCtrl, getUsersCtrl, userProfileCtrl, userDeleteCtrl } = require('../../controllers/users/userController');
+const islogin = require('../../middlewares/isLogin');
+
 
 userRouter.post('/register', userRegisterCtrl)
 
 userRouter.post('/login', userLoginCtrl)
 
-userRouter.get('/profile/:id', userProfileCtrl )
+userRouter.get('/profile/',islogin ,userProfileCtrl )
 
 userRouter.get('/', getUsersCtrl)
 
