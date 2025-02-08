@@ -1,10 +1,32 @@
+const User = require("../../model/User/User");
+const bcrypt = require('bcryptjs');
 
 //Register 
 userRegisterCtrl = async(req, res) => {
+    const {firstname, lastname, email,password} = req.body;
+
+    console.log(req.body);
     try {
+        //check if user exists
+        const userFound = await User.findOne({email});
+        if(userFound){
+          return res.json({
+                msg: "User already exists"
+            });
+        }
+        //hash password
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(password, salt);
+        //create a user
+        const user = await User.create({
+            firstname,
+            lastname,
+             email,
+             password : hash
+        })
        res.json({
            status: "success",
-           data: "user registered"
+           data: user
        })
     } catch (error) {
        res.json(error.message)
@@ -12,10 +34,29 @@ userRegisterCtrl = async(req, res) => {
 }
 // Login
 userLoginCtrl = async(req, res) => {
+    const {email, password} = req.body;
     try {
+        // check if user exists
+        const userFound = await User.findOne({email});
+
+        if(!userFound){
+            return res.json({
+                msg: "Invalid login credentials"
+            })
+        }
+
+        // verify password
+        const isMatch = await bcrypt.compare(password, userFound.password);
+
+        if(!isMatch){
+            return res.json({
+                msg: "Invalid login credentials",
+            })
+        }
+
        res.json({
            status: "success",
-           data: "Login"
+           data: userFound
        })
     } catch (error) {
        res.json(error.message)
