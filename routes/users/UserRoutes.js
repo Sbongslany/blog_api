@@ -1,19 +1,32 @@
- const express = require('express');
- const userRouter = express.Router();
-const { userRegisterCtrl, userLoginCtrl, getUsersCtrl, userProfileCtrl, userDeleteCtrl } = require('../../controllers/users/userController');
+const express = require('express');
+const userRouter = express.Router();
+const {
+    userRegisterCtrl,
+    userLoginCtrl,
+    getUsersCtrl,
+    userProfileCtrl,
+    userDeleteCtrl,
+    userUpdateCtrl,
+    profilePhotoUploadCtrl
+} = require('../../controllers/users/userController');
 const islogin = require('../../middlewares/isLogin');
+const multer = require('multer');
+const storage = require("../../config/cloudinary");
 
-
+// instance of multer
+const upload = multer({storage});
 userRouter.post('/register', userRegisterCtrl)
 
 userRouter.post('/login', userLoginCtrl)
 
-userRouter.get('/profile/',islogin ,userProfileCtrl )
+userRouter.get('/profile/', islogin, userProfileCtrl)
 
 userRouter.get('/', getUsersCtrl)
 
 userRouter.delete('/:id', userDeleteCtrl)
 
-userRouter.put('/:id', )
+userRouter.put('/:id', userUpdateCtrl)
+
+userRouter.post('/profile-photo-upload',islogin, upload.single("profile"), profilePhotoUploadCtrl)
 
 module.exports = userRouter;
