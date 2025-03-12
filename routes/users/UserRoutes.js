@@ -8,7 +8,9 @@ const {
     userDeleteCtrl,
     userUpdateCtrl,
     profilePhotoUploadCtrl,
-    whoViewedMyProfileCtrl
+    whoViewedMyProfileCtrl,
+    followingCtrl,
+    unfollowCtrl
 } = require('../../controllers/users/userController');
 const islogin = require('../../middlewares/isLogin');
 const multer = require('multer');
@@ -16,18 +18,23 @@ const storage = require("../../config/cloudinary");
 
 // instance of multer
 const upload = multer({storage});
+//Register
 userRouter.post('/register', userRegisterCtrl)
-
+//Login
 userRouter.post('/login', userLoginCtrl)
-
+//Viewers
 userRouter.get('/profile-viewers/:id',islogin, whoViewedMyProfileCtrl)
-
-userRouter.get('/profile/', islogin, userProfileCtrl)
-
+//Following
+userRouter.get('/following/:id',islogin, followingCtrl)
+//unfolllowing
+userRouter.get('/unfollow/:id',islogin, unfollowCtrl)
+//Profile
+userRouter.get('/profile', islogin, userProfileCtrl)
+//All
 userRouter.get('/', getUsersCtrl)
-
+//Delete
 userRouter.delete('/:id', userDeleteCtrl)
-
+//Update
 userRouter.put('/:id', userUpdateCtrl)
 
 
