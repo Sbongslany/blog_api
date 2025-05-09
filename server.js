@@ -2,18 +2,32 @@ const express = require("express");
 const userRouter = require("./routes/users/UserRoutes");
 const postsRouter = require("./routes/posts/postsRoutes");
 const commentsRouter = require("./routes/comments/commentsRouter");
+const Post = require("./model/Post/Post");
 const categoriesRouter = require("./routes/categories/categoriesRouter");
 const globalErrHandler = require("./middlewares/globalErrHandler");
 const cors = require('cors');
 require("dotenv").config()
 require('./config/db_connect')
 const isAdmin = require("./middlewares/isAdmin");
+const {getAllPostsCtrl} = require("./controllers/posts/postsController");
 
 
 const app = express();
 app.use(cors()); 
 
 app.use(express.json()) //pass incoming payload
+
+app.get("/", async (req, res) => {
+    try{
+        const posts = await Post.find();
+        res.json({
+            status: "success",
+            data: posts
+        })
+    }catch(err){
+    res.json(err)
+    }
+})
 
 //middleware
 const userAuth = {
