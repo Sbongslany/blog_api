@@ -2,7 +2,7 @@
 const getTokenFromHeader = require("../utils/getTokenFromHeader")
 const verifyToken = require("../utils/verifyToken")
 const {appErr} = require("../utils/appErr")
-const  User = require("../model/user/User")
+const  User = require("../model/User/User")
 
 const isAdmin = async (req, res, next) => {
     // get token from header

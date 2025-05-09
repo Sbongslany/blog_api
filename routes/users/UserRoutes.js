@@ -4,7 +4,6 @@ const {
     userRegisterCtrl,
     userLoginCtrl,
     userProfileCtrl,
-    userDeleteCtrl,
     userUpdateCtrl,
     profilePhotoUploadCtrl,
     whoViewedMyProfileCtrl,
