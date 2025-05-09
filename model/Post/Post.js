@@ -67,17 +67,20 @@ postSchema.pre(/^find/, function (next) {
 
     postSchema.virtual("likesPercentage").get(function () {
         const post = this;
-        const total = +post.likes.length + +post.disLikes.length;
+        const total = post.likes.length + post.disLikes.length;
+        if (total === 0) return "0%";
         const percentage = (post.likes.length / total) * 100;
-        return `${percentage}%`
-    })
+        return `${percentage.toFixed(2)}%`;
+    });
 
     postSchema.virtual("dislikesPercentage").get(function () {
         const post = this;
-        const total = +post.disLikes.length + +post.disLikes.length;
+        const total = post.likes.length + post.disLikes.length;
+        if (total === 0) return "0%";
         const percentage = (post.disLikes.length / total) * 100;
-        return `${percentage}%`
-    })
+        return `${percentage.toFixed(2)}%`;
+    });
+
 
     postSchema.virtual("daysAgo").get(function () {
         const post = this;
