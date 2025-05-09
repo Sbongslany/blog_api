@@ -4,10 +4,14 @@ const postsRouter = require("./routes/posts/postsRoutes");
 const commentsRouter = require("./routes/comments/commentsRouter");
 const categoriesRouter = require("./routes/categories/categoriesRouter");
 const globalErrHandler = require("./middlewares/globalErrHandler");
+const cors = require('cors');
 require("dotenv").config()
 require('./config/db_connect')
-const app = express();
+const isAdmin = require("./middlewares/isAdmin");
 
+
+const app = express();
+app.use(cors()); 
 
 app.use(express.json()) //pass incoming payload
 
@@ -29,6 +33,7 @@ app.use((req, res, next) =>{
 });
 
 //// Routes
+// app.use(isAdmin);
 //// ------------------------ Users  -----------------------///
 app.use('/api/v1/users/', userRouter);
 //// ------------------------ Post  -----------------------///

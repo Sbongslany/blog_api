@@ -1,4 +1,7 @@
 const User = require("../../model/User/User");
+const Post = require("../../model/Post/Post");
+const Comments = require("../../model/Comment/Comment");
+const Category = require("../../model/Category/Category");
 const bcrypt = require('bcryptjs');
 const generateToken = require('../../utils/generateToken');
 const getTokenFromToken = require('../../utils/getTokenFromHeader');
@@ -62,7 +65,7 @@ const userLoginCtrl = async (req, res, next) => {
             }
         })
     } catch (error) {
-        return next(new AppErr(error.message));
+        return next(res.json(error.message));
     }
 }
 //who viewed my profile
@@ -127,7 +130,7 @@ const followingCtrl = async (req, res, next) => {
         }
 
     } catch (error) {
-        res.json(error.message)
+        next(appErr(error.message));
     }
 }
 //unfollow
@@ -167,7 +170,7 @@ const unfollowCtrl = async (req, res, next) => {
         }
 
     } catch (error) {
-        res.json(error.message)
+        next(appErr(error.message));
     }
 }
 // Block Users
@@ -195,7 +198,8 @@ const blockUserCtrl = async (req, res, next) => {
             await userWhoBlocked.save()
         }
     } catch (error) {
-        res.json(error.message)
+        next(appErr(error.message));
+
     }
 }
 // Unblock Users
@@ -226,57 +230,151 @@ const unblockUserCtrl = async (req, res, next) => {
         }
 
     } catch (error) {
-        res.json(error.message)
+        next(appErr(error.message));
+    }
+}
+// Admin block
+const adminBlockCtrl = async (req, res, next) => {
+    try {
+        //find user to be blocked
+        const userToBeBlocked = await User.findById(req.params.id)
+        //check if user is found
+        if(!userToBeBlocked) {
+            return next(appErr('User not found'));
+        }
+        // Change is blocked to true
+        userToBeBlocked.isBlocked = true;
+        //save
+        await userToBeBlocked.save();
+        res.json({
+            status: "success",
+            data: "Yuu have successfully blocked this user"
+        })
+    } catch (error) {
+        next(appErr(error.message));
+    }
+}
+// Admin unblock
+const adminUnBlockCtrl = async (req, res, next) => {
+    try {
+        //find user to be blocked
+        const userToBeUnBlocked = await User.findById(req.params.id)
+        //check if user is found
+        if(!userToBeUnBlocked) {
+            return next(appErr('User not found'));
+        }
+        // Change is blocked to true
+        userToBeUnBlocked.isBlocked = false;
+        //save
+        await userToBeUnBlocked.save();
+        res.json({
+            status: "success",
+            data: "Yuu have successfully unblocked this user"
+        })
+    } catch (error) {
+        next(appErr(error.message));
     }
 }
 //Profile
-const userProfileCtrl = async (req, res) => {
+const userProfileCtrl = async (req, res, next) => {
     // console.log(req.userAuth);
     // const {id} = req.params;
     try {
         // const token = getTokenFromToken(req);
         // console.log(token);
-        const user = await User.findById(req.userAuth);
+        const user = await User.findById(req.userAuth)
         res.json({
             status: "success",
             data: user
         })
 
     } catch (error) {
-        res.json(error.message)
+        next(appErr(error.message));
     }
 }
-// Get Users
+// Get All Users
 const getUsersCtrl = async (req, res) => {
     try {
+        const users = await User.find({});
         res.json({
             status: "success",
-            data: "Get all Users Route"
+            data: users
         })
     } catch (error) {
-        res.json(error.message)
+        next(appErr(error.message));
     }
 }
 // delete
-const userDeleteCtrl = async (req, res) => {
+// const userDeleteCtrl = async (req, res) => {
+//     try {
+//         res.json({
+//             status: "success",
+//             data: "Delete Route"
+//         })
+//     } catch (error) {
+//         res.json(error.message)
+//     }
+// }
+//update
+const userUpdateCtrl = async (req, res, next) => {
+    const { email, lastname, firstname, isAdmin } = req.body;
+
     try {
+        //Check if email is taken
+       if (email) {
+           const findEmail = await User.findOne({ email });
+           if(findEmail) {
+               return next(appErr('Email not found', 400));
+           }
+       }
+
+       // Update the user
+        const user = await User.findByIdAndUpdate(req.userAuth, {
+            lastname,
+            firstname,
+            email,
+                isAdmin
+        },
+        {
+            new: true,
+            runValidators: true
+        }
+        )
         res.json({
             status: "success",
-            data: "Delete Route"
+            data: user
         })
     } catch (error) {
-        res.json(error.message)
+        next(appErr(error.message));
     }
 }
-//update
-const userUpdateCtrl = async (req, res) => {
+//update password
+const updatePasswordCtrl = async (req, res, next) => {
+    const {password } = req.body;
+
     try {
-        res.json({
-            status: "success",
-            data: "Edit Route"
-        })
+
+        if (password) {
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(password, salt);
+
+        const user = await User.findByIdAndUpdate(
+            req.userAuth,
+            {password: hash},
+            {new: true,
+            runValidators: true}
+        )
+
+            res.json({
+                status: "success",
+                data: 'Password changed successfully'
+            })
+        }else{
+            return next(appErr('Passwords do not match'));
+        }
+
     } catch (error) {
-        res.json(error.message)
+        next(appErr(error.message));
     }
 }
 //user profile upload
@@ -320,18 +418,44 @@ const profilePhotoUploadCtrl = async (req, res, next) => {
         next(appErr(error.message, 500));
     }
 }
+//delete account
+const deleteAccountCtrl = async (req, res, next) => {
+
+    try {
+        // find the user to be deleted
+        const userToBeDeleted = await User.findById(req.userAuth);
+        //find all posts to be deleted
+        await Post.deleteMany({user: req.userAuth});
+        //find all posts to be deleted
+        await Comments.deleteMany({user: req.userAuth});
+        //find all Category to be deleted
+        await Category.deleteMany({user: req.userAuth});
+        // delete user
+        await userToBeDeleted.deleteOne();
+        return res.json({
+            status: "success",
+            data: "You have successfully deleted account!"
+        })
+    } catch (error) {
+        next(appErr(error.message));
+    }
+}
 
 module.exports = {
     userRegisterCtrl,
     userLoginCtrl,
     userProfileCtrl,
     getUsersCtrl,
-    userDeleteCtrl,
     userUpdateCtrl,
     profilePhotoUploadCtrl,
     whoViewedMyProfileCtrl,
     followingCtrl,
     unfollowCtrl,
     blockUserCtrl,
-    unblockUserCtrl
+    unblockUserCtrl,
+    adminBlockCtrl,
+    adminUnBlockCtrl,
+    updatePasswordCtrl,
+    deleteAccountCtrl,
+
 }
